@@ -1,0 +1,8 @@
+[package]
+name = "dovero"
+version = "0.1.0"
+authors = ["Luciano Vernaschi <luciano@cromoteca.com>"]
+edition = "2018"
+
+[dependencies]
+web-view = "0.4.0"
