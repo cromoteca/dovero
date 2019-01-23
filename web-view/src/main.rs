@@ -1,32 +1,24 @@
 //#![windows_subsystem = "windows"]
 
 extern crate web_view;
+extern crate serde_json;
 
-use std::{
-    sync::{Arc, Mutex},
-    thread,
-    time::Duration,
-};
 use web_view::*;
+use serde_json::*;
 
 fn main() {
-    let counter = Arc::new(Mutex::new(0));
-
-    let counter_inner = counter.clone();
     let webview = web_view::builder()
         .title("Timer example")
         .content(Content::Url("http://localhost:4200/"))
         .size(800, 600)
         .resizable(true)
         .debug(true)
-        .user_data(0)
+        .user_data("unknown")
         .invoke_handler(|webview, arg| {
             match arg {
                 "getSQLiteVersion" => {
-                    *webview.user_data_mut() += 10;
-                    let mut counter = counter.lock().unwrap();
-                    *counter = 0;
-                    render(webview, *counter)?;
+                    *webview.user_data_mut() = "ciao";
+                    webview.eval("boh")?;
                 }
                 "exit" => {
                     webview.terminate();
@@ -38,27 +30,9 @@ fn main() {
         .build()
         .unwrap();
 
-    let handle = webview.handle();
-    thread::spawn(move || loop {
-        {
-            let mut counter = counter_inner.lock().unwrap();
-            *counter += 1;
-            let count = *counter;
-            handle
-                .dispatch(move |webview| {
-                    *webview.user_data_mut() -= 1;
-                    render(webview, count)
-                })
-                .unwrap();
-        }
-        thread::sleep(Duration::from_secs(1));
-    });
-
     webview.run().unwrap();
 }
 
-fn render(webview: &mut WebView<i32>, counter: u32) -> WVResult {
-    let user_data = *webview.user_data();
-    println!("counter: {}, userdata: {}", counter, user_data);
-    webview.eval(&format!("updateTicks({}, {})", counter, user_data))
+struct SQLiteVersion {
+    number: String,
 }
