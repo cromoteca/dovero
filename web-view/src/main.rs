@@ -1,12 +1,11 @@
 //#![windows_subsystem = "windows"]
 
-extern crate web_view;
-extern crate serde;
+#[macro_use]
+extern crate serde_derive;
 extern crate serde_json;
+extern crate web_view;
 
 use web_view::*;
-use serde::*;
-use serde_json::*;
 
 fn main() {
     let webview = web_view::builder()
@@ -15,26 +14,17 @@ fn main() {
         .size(800, 600)
         .resizable(true)
         .debug(true)
-        .user_data("unknown")
+        .user_data("")
         .invoke_handler(|webview, arg| {
-            use Cmd::*;
+            // let tasks = webview.user_data_mut();
 
-            let tasks_len = {
-                let tasks = webview.user_data_mut();
+            // match serde_json::from_str(arg).unwrap() {
+            //     Cmd::GetSQLiteVersion => tasks.push(String::from("Rust does not know")),
+            // }
 
-                match serde_json::from_str(arg).unwrap() {
-                    GetSQLiteVersion => (),
-                    Log { text } => println!("{}", text),
-                    AddTask { name } => tasks.push(Task { name, done: false }),
-                    MarkTask { index, done } => tasks[index].done = done,
-                    ClearDoneTasks => tasks.retain(|t| !t.done),
-                }
-
-                tasks.len()
-            };
-
-            webview.set_title(&format!("Rust Todo App ({} Tasks)", tasks_len))?;
-            render(webview)
+            // let rendered_json = format!("rpc.render({})", serde_json::to_string(tasks).unwrap());
+            // webview.eval(&rendered_json)
+            webview.eval(&arg.replace("{}", "Rust does not know"))
         })
         .build()
         .unwrap();
@@ -47,6 +37,7 @@ struct SQLiteVersion {
     number: String,
 }
 
+#[derive(Deserialize)]
 #[serde(tag = "cmd", rename_all = "camelCase")]
 enum Cmd {
     GetSQLiteVersion,

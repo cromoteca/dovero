@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, NgZone } from '@angular/core';
 import { InfoService } from './info.service';
 
 @Component({
@@ -7,11 +7,13 @@ import { InfoService } from './info.service';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent {
-  constructor(private infoService: InfoService) { }
+  constructor(private zone: NgZone, private infoService: InfoService) { }
 
   sqliteVersion: String;
 
   ngOnInit() {
-    this.infoService.getSQLiteVersion().subscribe(v => this.sqliteVersion = v);
+    this.infoService.getSQLiteVersion().subscribe(v => {
+      this.zone.run(() => { this.sqliteVersion = v; });
+    });
   }
 }
