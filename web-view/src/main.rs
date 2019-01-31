@@ -5,7 +5,11 @@ extern crate serde_derive;
 extern crate serde_json;
 extern crate web_view;
 
-use web_view::*;
+use exif::Reader;
+use rusqlite::{Connection, Error, NO_PARAMS};
+use std::fs::File;
+use std::io::BufReader;
+use web_view::Content;
 
 fn main() {
     let webview = web_view::builder()
@@ -16,20 +20,26 @@ fn main() {
         .debug(true)
         .user_data("")
         .invoke_handler(|webview, arg| {
-            // let tasks = webview.user_data_mut();
-
-            // match serde_json::from_str(arg).unwrap() {
-            //     Cmd::GetSQLiteVersion => tasks.push(String::from("Rust does not know")),
-            // }
-
-            // let rendered_json = format!("rpc.render({})", serde_json::to_string(tasks).unwrap());
-            // webview.eval(&rendered_json)
-            webview.eval(&arg.replace("{}", "Rust does not know"))
+            let db = Connection::open_in_memory().unwrap();
+            let mut query = db.prepare("select sqlite_version() as version").unwrap();
+            let results: Result<Vec<String>, Error> = query
+                .query_and_then(NO_PARAMS, |row| row.get_checked(0))
+                .unwrap()
+                .collect();
+            webview.eval(&arg.replace("{}", &results.unwrap().concat()))
         })
         .build()
         .unwrap();
 
     webview.run().unwrap();
+
+    let path = "/home/luciano/BlueXML/Documents/Images/wallpapers/DSC06771.JPG";
+    let file = File::open(path).unwrap();
+    let reader = Reader::new(&mut BufReader::new(&file)).unwrap();
+
+    for field in reader.fields().iter() {
+        println!("{:?}", field);
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize)]
