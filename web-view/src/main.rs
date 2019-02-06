@@ -37,8 +37,8 @@ fn main() {
     let file = File::open(path).unwrap();
     let reader = Reader::new(&mut BufReader::new(&file)).unwrap();
 
-    for field in reader.fields().iter() {
-        println!("{:?}", field);
+    for _field in reader.fields().iter() {
+        // println!("{:?}", field);
     }
 }
 
