@@ -6,23 +6,18 @@ export class WebViewObservable<T> extends Observable<T> {
   counter = 0;
   operationName: String;
 
-  constructor(operationName: String) {
-    super();
+  constructor(operationName?: String) {
+    super((observer) => {
+      let w = window as any;
+      w.he = observer;
+      w.obs = observer.next;
+      w.external.invoke('window.obs.call(window.he ,"{}"); delete window.obs; delete window.he');
+      return { unsubscribe() { } };
+    });
     this.operationName = operationName;
   }
 
-  // constructor(zone: NgZone, subscribe?: (this: Observable<T>, subscriber: Subscriber<T>) => TeardownLogic) {
-  //   super(subscribe);
-  //   this.zone = zone;
-  // }
-
   subscribeZone(zone: NgZone, next: (value: T) => void, error?: (error: any) => void): Subscription {
-    let w = window as any;
-    let observer :Observer<T> = {
-      next:next,
-      error:error,
-      complete:() => { delete w.he; delete w.obs; },
-    };
-    return this.subscribe((next) => {}); ///////////// WIP
+    return this.subscribe((value) => { zone.run(() => next(value)) }, error);
   }
 }

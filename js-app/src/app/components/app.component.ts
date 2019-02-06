@@ -12,8 +12,6 @@ export class AppComponent {
   sqliteVersion: String;
 
   ngOnInit() {
-    this.infoService.getSQLiteVersion().subscribe(v => {
-      this.zone.run(() => { this.sqliteVersion = v; });
-    });
+    this.infoService.getSQLiteVersion().subscribeZone(this.zone, v => this.sqliteVersion = v);
   }
 }
