@@ -4,17 +4,25 @@ import { Observable, Observer, Subscriber, TeardownLogic, PartialObserver, Subsc
 export class WebViewObservable<T> extends Observable<T> {
   // zone: NgZone;
   counter = 0;
-  operationName: String;
 
-  constructor(operationName?: String) {
+  constructor(command: any, property: string) {
     super((observer) => {
       let w = window as any;
-      w.he = observer;
-      w.obs = observer.next;
-      w.external.invoke('window.obs.call(window.he ,"{}"); delete window.obs; delete window.he');
+      let id = 'id' + String(Math.random()).substring(2);
+
+      w[id] = {
+        fn: result => observer.next(result[property]),
+        ctx: observer
+      }
+
+      let payload: any = {
+        id: id,
+        command: command
+      }
+
+      w.external.invoke(JSON.stringify(payload));
       return { unsubscribe() { } };
     });
-    this.operationName = operationName;
   }
 
   subscribeZone(zone: NgZone, next: (value: T) => void, error?: (error: any) => void): Subscription {

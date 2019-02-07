@@ -18,15 +18,34 @@ fn main() {
         .size(800, 600)
         .resizable(true)
         .debug(true)
-        .user_data("")
+        .user_data(UserData {
+            ..Default::default()
+        })
         .invoke_handler(|webview, arg| {
-            let db = Connection::open_in_memory().unwrap();
-            let mut query = db.prepare("select sqlite_version() as version").unwrap();
-            let results: Result<Vec<String>, Error> = query
-                .query_and_then(NO_PARAMS, |row| row.get_checked(0))
-                .unwrap()
-                .collect();
-            webview.eval(&arg.replace("{}", &results.unwrap().concat()))
+            let userdata = webview.user_data_mut();
+            let payload: Payload = serde_json::from_str(arg).unwrap();
+            println!("{}", arg);
+
+            match payload.command {
+                Cmd::GetSQLiteVersion => {
+                    let db = Connection::open_in_memory().unwrap();
+                    let mut query = db.prepare("select sqlite_version() as version").unwrap();
+                    let results: Result<Vec<String>, Error> = query
+                        .query_and_then(NO_PARAMS, |row| row.get_checked(0))
+                        .unwrap()
+                        .collect();
+                    userdata.sqlite_version = results.unwrap().concat();
+                }
+                Cmd::Add { a, b } => {
+                    userdata.sum = a + b;
+                }
+            };
+            let json = serde_json::to_string(userdata).unwrap();
+            webview.eval(&format!(
+                "window.{}.fn.call(window.{}.ctx ,{}); delete window.{}",
+                payload.id, payload.id, json, payload.id
+            ))
+            //webview.eval(&arg.replace("{}", &results.unwrap().concat()))
         })
         .build()
         .unwrap();
@@ -42,13 +61,21 @@ fn main() {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-struct SQLiteVersion {
-    number: String,
+#[derive(Debug, Serialize, Deserialize, Default)]
+struct UserData {
+    sqlite_version: String,
+    sum: i32,
+}
+
+#[derive(Deserialize)]
+struct Payload {
+    id: String,
+    command: Cmd,
 }
 
 #[derive(Deserialize)]
 #[serde(tag = "cmd", rename_all = "camelCase")]
 enum Cmd {
     GetSQLiteVersion,
+    Add { a: i32, b: i32 },
 }
