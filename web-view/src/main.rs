@@ -23,7 +23,7 @@ fn main() {
         })
         .invoke_handler(|webview, arg| {
             let userdata = webview.user_data_mut();
-            let payload: Payload = serde_json::from_str(arg).unwrap();
+            let payload: Payload<Cmd> = serde_json::from_str(arg).unwrap();
             println!("{}", arg);
 
             match payload.command {
@@ -68,9 +68,9 @@ struct UserData {
 }
 
 #[derive(Deserialize)]
-struct Payload {
+struct Payload<T> {
     id: String,
-    command: Cmd,
+    command: T,
 }
 
 #[derive(Deserialize)]
