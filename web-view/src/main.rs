@@ -21,11 +21,9 @@ fn main() {
         .debug(true)
         .user_data(())
         .invoke_handler(|webview, arg| {
-            let json: String;
             let payload: Payload<Cmd> = serde_json::from_str(arg).unwrap();
-            println!("{}", arg);
 
-            match payload.command {
+            let json = match payload.command {
                 Cmd::GetSQLiteVersion => {
                     let db = Connection::open_in_memory().unwrap();
                     let mut query = db.prepare("select sqlite_version() as version").unwrap();
@@ -33,10 +31,10 @@ fn main() {
                         .query_and_then(NO_PARAMS, |row| row.get_checked(0))
                         .unwrap()
                         .collect();
-                    json = to_json(&results.unwrap().concat());
+                    to_json(&results.unwrap().concat())
                 }
                 Cmd::Add { a, b } => {
-                    json = to_json(&(a + b));
+                    to_json(&(a + b))
                 }
             };
             webview.eval(&format!(
