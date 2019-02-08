@@ -5,13 +5,13 @@ export class WebViewObservable<T> extends Observable<T> {
   // zone: NgZone;
   counter = 0;
 
-  constructor(command: any, property: string) {
+  constructor(command: any) {
     super((observer) => {
       let w = window as any;
       let id = 'id' + String(Math.random()).substring(2);
 
       w[id] = {
-        fn: result => observer.next(result[property]),
+        fn: result => observer.next(result),
         ctx: observer
       }
 

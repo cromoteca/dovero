@@ -9,6 +9,7 @@ use exif::Reader;
 use rusqlite::{Connection, Error, NO_PARAMS};
 use std::fs::File;
 use std::io::BufReader;
+use serde::ser::Serialize;
 use web_view::Content;
 
 fn main() {
@@ -18,11 +19,9 @@ fn main() {
         .size(800, 600)
         .resizable(true)
         .debug(true)
-        .user_data(UserData {
-            ..Default::default()
-        })
+        .user_data(())
         .invoke_handler(|webview, arg| {
-            let userdata = webview.user_data_mut();
+            let json: String;
             let payload: Payload<Cmd> = serde_json::from_str(arg).unwrap();
             println!("{}", arg);
 
@@ -34,18 +33,16 @@ fn main() {
                         .query_and_then(NO_PARAMS, |row| row.get_checked(0))
                         .unwrap()
                         .collect();
-                    userdata.sqlite_version = results.unwrap().concat();
+                    json = to_json(&results.unwrap().concat());
                 }
                 Cmd::Add { a, b } => {
-                    userdata.sum = a + b;
+                    json = to_json(&(a + b));
                 }
             };
-            let json = serde_json::to_string(userdata).unwrap();
             webview.eval(&format!(
                 "window.{}.fn.call(window.{}.ctx ,{}); delete window.{}",
                 payload.id, payload.id, json, payload.id
             ))
-            //webview.eval(&arg.replace("{}", &results.unwrap().concat()))
         })
         .build()
         .unwrap();
@@ -61,10 +58,8 @@ fn main() {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Default)]
-struct UserData {
-    sqlite_version: String,
-    sum: i32,
+fn to_json<T: ?Sized>(value: &T) -> String where T: Serialize {
+    serde_json::to_string(value).unwrap() 
 }
 
 #[derive(Deserialize)]

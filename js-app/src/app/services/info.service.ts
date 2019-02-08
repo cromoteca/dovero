@@ -16,7 +16,7 @@ export class InfoService {
   getSQLiteVersion(): WebViewObservable<String> {
     return new WebViewObservable({
       cmd: 'getSQLiteVersion',
-    }, 'sqlite_version');
+    });
   }
 
   add(a: number, b: number): WebViewObservable<number> {
@@ -24,6 +24,6 @@ export class InfoService {
       cmd: 'add',
       a: a,
       b: b,
-    }, 'sum');
+    });
   }
 }
