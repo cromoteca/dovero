@@ -14,7 +14,7 @@ use web_view::Content;
 
 fn main() {
     let webview = web_view::builder()
-        .title("Timer example")
+        .title("Dovero")
         .content(Content::Url("http://localhost:4200/"))
         .size(800, 600)
         .resizable(true)
@@ -37,6 +37,7 @@ fn main() {
                     to_json(&(a + b))
                 }
             };
+
             webview.eval(&format!(
                 "window.{}.fn.call(window.{}.ctx ,{}); delete window.{}",
                 payload.id, payload.id, json, payload.id
@@ -57,7 +58,7 @@ fn main() {
 }
 
 fn to_json<T: ?Sized>(value: &T) -> String where T: Serialize {
-    serde_json::to_string(value).unwrap() 
+    serde_json::to_string(value).unwrap()
 }
 
 #[derive(Deserialize)]
