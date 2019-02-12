@@ -13,8 +13,14 @@ export class AppComponent {
   a: number;
   b: number;
   sum: number;
+  options: any;
+  display: boolean;
 
   ngOnInit() {
+    this.options = {
+        center: {lat: 47.212834, lng: -1.574735},
+        zoom: 12
+    };
     this.infoService.getSQLiteVersion().subscribeZone(this.zone, v => this.sqliteVersion = v);
     this.a = Math.random() * 10 | 0;
     this.b = Math.random() * 10 | 0;
