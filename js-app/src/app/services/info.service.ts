@@ -26,4 +26,10 @@ export class InfoService {
       b: b,
     });
   }
+
+  getPhotos(): WebViewObservable<any>{
+    return new WebViewObservable({
+      cmd: 'getPhotos',
+    });
+  }
 }

@@ -18,12 +18,13 @@ export class AppComponent {
 
   ngOnInit() {
     this.options = {
-        center: {lat: 47.212834, lng: -1.574735},
-        zoom: 12
+      center: { lat: 47.212834, lng: -1.574735 },
+      zoom: 12
     };
     this.infoService.getSQLiteVersion().subscribeZone(this.zone, v => this.sqliteVersion = v);
     this.a = Math.random() * 10 | 0;
     this.b = Math.random() * 10 | 0;
     this.infoService.add(this.a, this.b).subscribeZone(this.zone, v => this.sum = v);
+    this.infoService.getPhotos().subscribeZone(this.zone, v => console.log("LE FOTO!!! " + v));
   }
 }

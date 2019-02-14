@@ -42,6 +42,7 @@ fn main() {
                     to_json(&results.unwrap().concat())
                 }
                 Cmd::Add { a, b } => to_json(&(a + b)),
+                Cmd::GetPhotos => to_json(&get_photos(&db)),
             };
 
             webview.eval(&format!(
@@ -52,20 +53,25 @@ fn main() {
         .build()
         .unwrap();
 
+    webview.run().unwrap();
+}
+
+fn get_photos(db: &Connection) -> Vec<Photo> {
+    let mut photos = Vec::new();
     if let Ok(mut path) = current_dir() {
         path.push("photos");
 
-        if let Ok(photos) = read_dir(path) {
+        if let Ok(files) = read_dir(path) {
             let mut insert_photo = db
                 .prepare("insert into photos(name, lat, lon) values (?, ?, ?)")
                 .unwrap();
 
-            for photo in photos {
-                let photo = photo.unwrap();
+            for file in files {
+                let entry = file.unwrap();
 
-                if let Ok(file_type) = photo.file_type() {
+                if let Ok(file_type) = entry.file_type() {
                     if file_type.is_file() {
-                        let file = File::open(photo.path()).unwrap();
+                        let file = File::open(entry.path()).unwrap();
                         let reader = Reader::new(&mut BufReader::new(&file)).unwrap();
 
                         if let Some(lat) =
@@ -74,7 +80,7 @@ fn main() {
                             if let Some(lon) =
                                 read_gps_field(&reader, Tag::GPSLongitude, Tag::GPSLongitudeRef)
                             {
-                                let name = &photo.file_name().into_string().unwrap();
+                                let name = &entry.file_name().into_string().unwrap();
                                 insert_photo
                                     .execute(&[&name as &ToSql, &lat, &lon])
                                     .unwrap();
@@ -85,25 +91,23 @@ fn main() {
             }
 
             let mut stmt = db.prepare("select name, lat, lon from photos").unwrap();
-            let rows = stmt.query_map(NO_PARAMS, |row| {
-                println!(
-                    "{} {} {}",
-                    row.get::<_, String>(0),
-                    row.get::<_, f64>(1),
-                    row.get::<_, f64>(2)
-                );
-                row.get::<_, String>(0)
-            }).unwrap();
+            let rows = stmt
+                .query_map(NO_PARAMS, |row| {
+                    Photo {
+                        name: row.get::<_, String>(0),
+                        lat: row.get::<_, f64>(1),
+                        lon: row.get::<_, f64>(2),
+                    }
+                })
+                .unwrap();
 
-            let mut names = Vec::new();
-            for name_result in rows {
-                names.push(name_result.unwrap());
+            for photo in rows {
+                photos.push(photo.unwrap());
             }
-            println!("{:?}", names);
         }
     }
 
-    webview.run().unwrap();
+    photos
 }
 
 fn read_gps_field(reader: &Reader, gps_tag: Tag, gps_sign_tag: Tag) -> Option<f64> {
@@ -124,6 +128,13 @@ fn read_gps_field(reader: &Reader, gps_tag: Tag, gps_sign_tag: Tag) -> Option<f6
     }
 
     result
+}
+
+#[derive(Debug, Serialize)]
+struct Photo {
+    name: String,
+    lat: f64,
+    lon: f64,
 }
 
 fn to_decimal(dms: &[exif::Rational]) -> f64 {
@@ -148,4 +159,5 @@ struct Payload<T> {
 enum Cmd {
     GetSQLiteVersion,
     Add { a: i32, b: i32 },
+    GetPhotos,
 }
