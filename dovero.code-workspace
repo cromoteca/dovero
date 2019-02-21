@@ -1,10 +1,10 @@
 {
 	"folders": [
 		{
-			"path": "js-app"
+			"path": "angular-ui"
 		},
 		{
-			"path": "web-view"
+			"path": "rust-app"
 		}
 	]
 }
