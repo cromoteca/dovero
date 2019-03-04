@@ -1,5 +1,4 @@
-<p-gmap [options]="options" [style]="{'width':'100%','height':'100%'}"></p-gmap>
-<p-button type="text" (click)="display = true" icon="pi pi-arrow-right" label="Show Menu" class="sidebar-button"></p-button>
-<p-sidebar [(visible)]="display" position="left">
-  Menu will show here
-</p-sidebar>
+<div style="height: 100%;"
+     leaflet
+     [leafletOptions]="options">
+</div>

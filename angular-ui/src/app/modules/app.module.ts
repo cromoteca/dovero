@@ -4,10 +4,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 import { AppRoutingModule } from '../modules/app-routing.module';
 import { AppComponent } from '../components/app.component';
-import { GMapModule } from 'primeng/gmap';
-import { SidebarModule } from 'primeng/sidebar';
-import { ButtonModule } from 'primeng/button';
-
+import { LeafletModule } from '@asymmetrik/ngx-leaflet';
 
 @NgModule({
   declarations: [
@@ -17,9 +14,7 @@ import { ButtonModule } from 'primeng/button';
     BrowserModule,
     AppRoutingModule,
     BrowserAnimationsModule,
-    GMapModule,
-    SidebarModule,
-    ButtonModule,
+    LeafletModule.forRoot(),
   ],
   providers: [],
   bootstrap: [AppComponent]

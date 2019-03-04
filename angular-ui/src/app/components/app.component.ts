@@ -1,5 +1,8 @@
 import { Component, NgZone } from '@angular/core';
 import { InfoService } from '../services/info.service';
+import { latLng, tileLayer } from 'leaflet';
+
+declare var MarkerClusterer: any;
 
 @Component({
   selector: 'app-root',
@@ -18,13 +21,22 @@ export class AppComponent {
 
   ngOnInit() {
     this.options = {
-      center: { lat: 47.212834, lng: -1.574735 },
-      zoom: 12
+      layers: [
+        tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18, attribution: '...' })
+      ],
+      zoom: 5,
+      center: latLng(46.879966, -121.726909)
     };
     this.infoService.getSQLiteVersion().subscribeZone(this.zone, v => this.sqliteVersion = v);
     this.a = Math.random() * 10 | 0;
     this.b = Math.random() * 10 | 0;
     this.infoService.add(this.a, this.b).subscribeZone(this.zone, v => this.sum = v);
     this.infoService.getPhotos().subscribeZone(this.zone, v => console.log("LE FOTO!!! " + v));
+  }
+
+  loadPhotos(map: any) {
+    this.infoService.getPhotos().subscribeZone(this.zone, v => {
+      console.log(v);
+    });
   }
 }
