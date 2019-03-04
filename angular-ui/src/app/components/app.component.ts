@@ -25,7 +25,7 @@ export class AppComponent {
         tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18, attribution: '...' })
       ],
       zoom: 5,
-      center: latLng(46.879966, -121.726909)
+      center: latLng(47.212834, -1.574735)
     };
     this.infoService.getSQLiteVersion().subscribeZone(this.zone, v => this.sqliteVersion = v);
     this.a = Math.random() * 10 | 0;
