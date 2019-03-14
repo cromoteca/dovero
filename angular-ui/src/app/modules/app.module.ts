@@ -6,6 +6,8 @@ import { AppRoutingModule } from '../modules/app-routing.module';
 import { AppComponent } from '../components/app.component';
 import { LeafletModule } from '@asymmetrik/ngx-leaflet';
 
+import { AngularMaterialModule } from '../shared/angular-material.module';
+
 @NgModule({
   declarations: [
     AppComponent,
@@ -14,6 +16,7 @@ import { LeafletModule } from '@asymmetrik/ngx-leaflet';
     BrowserModule,
     AppRoutingModule,
     BrowserAnimationsModule,
+    AngularMaterialModule,
     LeafletModule.forRoot(),
   ],
   providers: [],
