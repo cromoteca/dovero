@@ -7,10 +7,14 @@ import { AppComponent } from '../components/app.component';
 import { LeafletModule } from '@asymmetrik/ngx-leaflet';
 
 import { AngularMaterialModule } from '../shared/angular-material.module';
+import { NavComponent } from '../nav/nav.component';
+import { LayoutModule } from '@angular/cdk/layout';
+import { MatToolbarModule, MatButtonModule, MatSidenavModule, MatIconModule, MatListModule } from '@angular/material';
 
 @NgModule({
   declarations: [
     AppComponent,
+    NavComponent,
   ],
   imports: [
     BrowserModule,
@@ -18,6 +22,12 @@ import { AngularMaterialModule } from '../shared/angular-material.module';
     BrowserAnimationsModule,
     AngularMaterialModule,
     LeafletModule.forRoot(),
+    LayoutModule,
+    MatToolbarModule,
+    MatButtonModule,
+    MatSidenavModule,
+    MatIconModule,
+    MatListModule,
   ],
   providers: [],
   bootstrap: [AppComponent]
