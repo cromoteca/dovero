@@ -2,7 +2,7 @@ import { Component, NgZone } from '@angular/core';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { latLng, tileLayer, Map, Control, marker, icon } from 'leaflet';
+import { latLng, tileLayer, Map, Control, marker, icon, TooltipEvent } from 'leaflet';
 import { InfoService } from '../services/info.service';
 
 //declare var MarkerClusterer: any;
@@ -52,7 +52,11 @@ export class NavComponent {
           })
         });
 
-        layer.bindTooltip("<em>" + photo.name + "</em>");
+        layer.addEventListener('tooltipopen', (e: TooltipEvent) => {
+          e.tooltip.setContent(photo.name);
+        });
+
+        layer.bindTooltip(photo.name);
         this.map.addLayer(layer);
       });
 
