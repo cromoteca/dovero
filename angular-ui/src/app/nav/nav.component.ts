@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { latLng, tileLayer } from 'leaflet';
+import { latLng, tileLayer, Map, Control } from 'leaflet';
 
 //declare var MarkerClusterer: any;
 
@@ -22,13 +22,18 @@ export class NavComponent {
 
   constructor(private breakpointObserver: BreakpointObserver) { }
 
+  onMapReady(map: Map) {
+    new Control.Zoom({ position: 'bottomleft' }).addTo(map);
+  }
+
   ngOnInit() {
     this.mapOptions = {
       layers: [
         tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18, attribution: '...' })
       ],
       zoom: 5,
-      center: latLng(47.212834, -1.574735)
+      center: latLng(47.212834, -1.574735),
+      zoomControl: false,
     };
   }
 
