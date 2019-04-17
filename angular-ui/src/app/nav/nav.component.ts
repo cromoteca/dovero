@@ -3,6 +3,7 @@ import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { latLng, tileLayer, Map, Control, marker, icon, TooltipEvent } from 'leaflet';
+import { MarkerClusterGroup } from 'leaflet.markercluster';
 import { InfoService } from '../services/info.service';
 
 //declare var MarkerClusterer: any;
@@ -15,6 +16,7 @@ import { InfoService } from '../services/info.service';
 export class NavComponent {
 
   map: Map;
+
   mapOptions: any;
 
   isHandset$: Observable<boolean> = this.breakpointObserver.observe(Breakpoints.Handset)
@@ -32,7 +34,7 @@ export class NavComponent {
   ngOnInit() {
     this.mapOptions = {
       layers: [
-        tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18, attribution: '...' })
+        tileLayer('//{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18, attribution: '...' })
       ],
       zoom: 5,
       center: latLng(47.212834, -1.574735),
@@ -40,7 +42,7 @@ export class NavComponent {
     };
 
     this.infoService.getPhotos().subscribeZone(this.zone, v => {
-      console.log(v);
+      var markers = new MarkerClusterGroup();
 
       v.forEach(photo => {
         let layer = marker([photo.lat, photo.lon], {
@@ -57,9 +59,10 @@ export class NavComponent {
         });
 
         layer.bindTooltip(photo.name);
-        this.map.addLayer(layer);
+        markers.addLayer(layer);
       });
 
+      this.map.addLayer(markers);
     });
   }
 

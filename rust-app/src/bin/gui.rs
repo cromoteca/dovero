@@ -92,12 +92,10 @@ fn get_photos(db: &Connection) -> Vec<Photo> {
 
             let mut stmt = db.prepare("select name, lat, lon from photos").unwrap();
             let rows = stmt
-                .query_map(NO_PARAMS, |row| {
-                    Photo {
+                .query_map(NO_PARAMS, |row| Photo {
                         name: row.get::<_, String>(0),
                         lat: row.get::<_, f64>(1),
                         lon: row.get::<_, f64>(2),
-                    }
                 })
                 .unwrap();
 
