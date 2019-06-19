@@ -2,7 +2,7 @@ import { Component, NgZone } from '@angular/core';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { latLng, tileLayer, Map, Control, marker, icon, TooltipEvent } from 'leaflet';
+import { latLng, tileLayer, Map, Control, marker, icon, TooltipEvent, divIcon } from 'leaflet';
 import { MarkerClusterGroup } from 'leaflet.markercluster';
 import { InfoService } from '../services/info.service';
 
@@ -43,6 +43,10 @@ export class NavComponent {
 
     this.infoService.getPhotos().subscribeZone(this.zone, v => {
       var markers = new MarkerClusterGroup();
+
+      markers.options.iconCreateFunction = function(cluster) {
+        return divIcon({ html: '<b>' + cluster.getChildCount() + '</b>' });
+      };
 
       v.forEach(photo => {
         let layer = marker([photo.lat, photo.lon], {
