@@ -6,18 +6,19 @@ extern crate serde_json;
 extern crate web_view;
 
 use exif::{Reader, Tag};
-use rusqlite::types::ToSql;
+use rusqlite::types::{Null, ToSql};
 use rusqlite::{Connection, Error, NO_PARAMS};
 use serde::ser::Serialize;
 use std::env::current_dir;
 use std::fs::{read_dir, File};
 use std::io::BufReader;
 use web_view::Content;
+use base64::{encode_config, URL_SAFE};
 
 fn main() {
     let db = Connection::open_in_memory().unwrap();
     db.execute(
-        "create table photos(name text, lat real, lon real)",
+        "create table photos(name text, lat real, lon real, thumbnail blob)",
         NO_PARAMS,
     )
     .unwrap();
@@ -43,6 +44,10 @@ fn main() {
                 }
                 Cmd::Add { a, b } => to_json(&(a + b)),
                 Cmd::GetPhotos => to_json(&get_photos(&db)),
+                Cmd::GetThumbnail { name } => to_json(&match get_thumbnail(&db, name) {
+                    Some(jpeg) => encode_config(&jpeg, URL_SAFE),
+                    None => String::new(),
+                }),
             };
 
             webview.eval(&format!(
@@ -63,7 +68,7 @@ fn get_photos(db: &Connection) -> Vec<Photo> {
 
         if let Ok(files) = read_dir(path) {
             let mut insert_photo = db
-                .prepare("insert into photos(name, lat, lon) values (?, ?, ?)")
+                .prepare("insert into photos(name, lat, lon, thumbnail) values (?, ?, ?, ?)")
                 .unwrap();
 
             for file in files {
@@ -81,9 +86,16 @@ fn get_photos(db: &Connection) -> Vec<Photo> {
                                 read_gps_field(&reader, Tag::GPSLongitude, Tag::GPSLongitudeRef)
                             {
                                 let name = &entry.file_name().into_string().unwrap();
-                                insert_photo
-                                    .execute(&[&name as &ToSql, &lat, &lon])
-                                    .unwrap();
+
+                                if let Some(jpeg) = get_jpeg(&reader, true) {
+                                    insert_photo
+                                        .execute(&[&name as &ToSql, &lat, &lon, &jpeg])
+                                        .unwrap();
+                                } else {
+                                    insert_photo
+                                        .execute(&[&name as &ToSql, &lat, &lon, &Null])
+                                        .unwrap();
+                                }
                             }
                         }
                     }
@@ -93,9 +105,9 @@ fn get_photos(db: &Connection) -> Vec<Photo> {
             let mut stmt = db.prepare("select name, lat, lon from photos").unwrap();
             let rows = stmt
                 .query_map(NO_PARAMS, |row| Photo {
-                        name: row.get::<_, String>(0),
-                        lat: row.get::<_, f64>(1),
-                        lon: row.get::<_, f64>(2),
+                    name: row.get::<_, String>(0),
+                    lat: row.get::<_, f64>(1),
+                    lon: row.get::<_, f64>(2),
                 })
                 .unwrap();
 
@@ -106,6 +118,14 @@ fn get_photos(db: &Connection) -> Vec<Photo> {
     }
 
     photos
+}
+
+fn get_thumbnail(db: &Connection, name: String) -> Option<Vec<u8>> {
+    let mut stmt = db.prepare("select thumbnail from photos where name = ?").unwrap();
+    match stmt.query_row(&[&name as &ToSql], |r| r.get(0)) {
+        Ok(jpeg) => Some(jpeg),
+        Err(_) => None,
+    }
 }
 
 fn read_gps_field(reader: &Reader, gps_tag: Tag, gps_sign_tag: Tag) -> Option<f64> {
@@ -126,6 +146,22 @@ fn read_gps_field(reader: &Reader, gps_tag: Tag, gps_sign_tag: Tag) -> Option<f6
     }
 
     result
+}
+
+fn get_jpeg(reader: &Reader, thumbnail: bool) -> Option<&[u8]> {
+    let offset = reader
+        .get_field(Tag::JPEGInterchangeFormat, thumbnail)
+        .and_then(|f| f.value.get_uint(0));
+    let len = reader
+        .get_field(Tag::JPEGInterchangeFormatLength, thumbnail)
+        .and_then(|f| f.value.get_uint(0));
+    let (offset, len) = match (offset, len) {
+        (Some(offset), Some(len)) => (offset as usize, len as usize),
+        (None, None) => return None,
+        _ => panic!("inconsistent JPEG offset and length"),
+    };
+    let buf = reader.buf();
+    Some(&buf[offset..offset + len])
 }
 
 #[derive(Debug, Serialize)]
@@ -158,4 +194,5 @@ enum Cmd {
     GetSQLiteVersion,
     Add { a: i32, b: i32 },
     GetPhotos,
+    GetThumbnail { name: String },
 }

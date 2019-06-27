@@ -32,4 +32,11 @@ export class InfoService {
       cmd: 'getPhotos',
     });
   }
+
+  getThumbnail(name: String) {
+    return new WebViewObservable({
+      cmd: 'getThumbnail',
+      name: name,
+    });
+  }
 }

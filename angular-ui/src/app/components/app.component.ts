@@ -14,10 +14,4 @@ export class AppComponent {
   ngOnInit() {
     this.infoService.getSQLiteVersion().subscribeZone(this.zone, v => console.log("Using SQLite version " + v));
   }
-
-  loadPhotos(map: any) {
-    this.infoService.getPhotos().subscribeZone(this.zone, v => {
-      console.log(v);
-    });
-  }
 }

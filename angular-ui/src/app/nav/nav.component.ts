@@ -44,7 +44,7 @@ export class NavComponent {
     this.infoService.getPhotos().subscribeZone(this.zone, v => {
       var markers = new MarkerClusterGroup();
 
-      markers.options.iconCreateFunction = function(cluster) {
+      markers.options.iconCreateFunction = function (cluster) {
         return divIcon({ html: '<b>' + cluster.getChildCount() + '</b>' });
       };
 
@@ -59,7 +59,9 @@ export class NavComponent {
         });
 
         layer.addEventListener('tooltipopen', (e: TooltipEvent) => {
-          e.tooltip.setContent(photo.name);
+          this.infoService.getThumbnail(photo.name).subscribeZone(this.zone, v => {
+            e.tooltip.setContent('<img src="data:image/jpeg;base64,' + v + '">');
+          });
         });
 
         layer.bindTooltip(photo.name);
