@@ -5,6 +5,7 @@ extern crate serde_derive;
 extern crate serde_json;
 extern crate web_view;
 
+use base64::{encode_config, URL_SAFE};
 use exif::{Reader, Tag};
 use rusqlite::types::{Null, ToSql};
 use rusqlite::{Connection, Error, NO_PARAMS};
@@ -13,7 +14,6 @@ use std::env::current_dir;
 use std::fs::{read_dir, File};
 use std::io::BufReader;
 use web_view::Content;
-use base64::{encode_config, URL_SAFE};
 
 fn main() {
     let db = Connection::open_in_memory().unwrap();
@@ -77,26 +77,32 @@ fn get_photos(db: &Connection) -> Vec<Photo> {
                 if let Ok(file_type) = entry.file_type() {
                     if file_type.is_file() {
                         let file = File::open(entry.path()).unwrap();
-                        let reader = Reader::new(&mut BufReader::new(&file)).unwrap();
 
-                        if let Some(lat) =
-                            read_gps_field(&reader, Tag::GPSLatitude, Tag::GPSLatitudeRef)
-                        {
-                            if let Some(lon) =
-                                read_gps_field(&reader, Tag::GPSLongitude, Tag::GPSLongitudeRef)
-                            {
-                                let name = &entry.file_name().into_string().unwrap();
+                        match Reader::new(&mut BufReader::new(&file)) {
+                            Ok(reader) => {
+                                if let Some(lat) =
+                                    read_gps_field(&reader, Tag::GPSLatitude, Tag::GPSLatitudeRef)
+                                {
+                                    if let Some(lon) = read_gps_field(
+                                        &reader,
+                                        Tag::GPSLongitude,
+                                        Tag::GPSLongitudeRef,
+                                    ) {
+                                        let name = &entry.file_name().into_string().unwrap();
 
-                                if let Some(jpeg) = get_jpeg(&reader, true) {
-                                    insert_photo
-                                        .execute(&[&name as &ToSql, &lat, &lon, &jpeg])
-                                        .unwrap();
-                                } else {
-                                    insert_photo
-                                        .execute(&[&name as &ToSql, &lat, &lon, &Null])
-                                        .unwrap();
+                                        if let Some(jpeg) = get_jpeg(&reader, true) {
+                                            insert_photo
+                                                .execute(&[&name as &ToSql, &lat, &lon, &jpeg])
+                                                .unwrap();
+                                        } else {
+                                            insert_photo
+                                                .execute(&[&name as &ToSql, &lat, &lon, &Null])
+                                                .unwrap();
+                                        }
+                                    }
                                 }
                             }
+                            Err(e) => println!("{:?}", e),
                         }
                     }
                 }
@@ -121,7 +127,9 @@ fn get_photos(db: &Connection) -> Vec<Photo> {
 }
 
 fn get_thumbnail(db: &Connection, name: String) -> Option<Vec<u8>> {
-    let mut stmt = db.prepare("select thumbnail from photos where name = ?").unwrap();
+    let mut stmt = db
+        .prepare("select thumbnail from photos where name = ?")
+        .unwrap();
     match stmt.query_row(&[&name as &ToSql], |r| r.get(0)) {
         Ok(jpeg) => Some(jpeg),
         Err(_) => None,
