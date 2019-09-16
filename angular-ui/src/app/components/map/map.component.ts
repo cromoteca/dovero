@@ -1,19 +1,19 @@
-import { Component, NgZone } from '@angular/core';
+import { Component, OnInit, NgZone } from '@angular/core';
+import { map } from 'rxjs/operators';
+import { latLng, tileLayer, Map, Control, marker, icon, TooltipEvent, divIcon, Point } from 'leaflet';
+import { MarkerClusterGroup } from 'leaflet.markercluster';
+import { InfoService } from '../../services/info.service';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
-import { latLng, tileLayer, Map, Control, marker, icon, TooltipEvent, divIcon } from 'leaflet';
-import { MarkerClusterGroup } from 'leaflet.markercluster';
-import { InfoService } from '../services/info.service';
 
 //declare var MarkerClusterer: any;
 
 @Component({
-  selector: 'app-nav',
-  templateUrl: './nav.component.html',
-  styleUrls: ['./nav.component.scss']
+  selector: 'app-map',
+  templateUrl: './map.component.html',
+  styleUrls: ['./map.component.scss']
 })
-export class NavComponent {
+export class MapComponent implements OnInit {
 
   map: Map;
 
@@ -34,7 +34,7 @@ export class NavComponent {
   ngOnInit() {
     this.mapOptions = {
       layers: [
-        tileLayer('//{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18, attribution: '...' })
+        tileLayer('//{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png', { maxZoom: 18, attribution: '...' })
       ],
       zoom: 5,
       center: latLng(47.212834, -1.574735),
@@ -45,7 +45,7 @@ export class NavComponent {
       var markers = new MarkerClusterGroup();
 
       markers.options.iconCreateFunction = function (cluster) {
-        return divIcon({ html: '<b>' + cluster.getChildCount() + '</b>' });
+        return divIcon({ html: '<span class=cluster>' + cluster.getChildCount() + '</span>', iconSize: new Point(25, 25) });
       };
 
       v.forEach(photo => {
