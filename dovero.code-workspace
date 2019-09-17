@@ -5,6 +5,9 @@
 		},
 		{
 			"path": "rust-app"
+		},
+		{
+			"path": "react-ui"
 		}
 	]
 }
