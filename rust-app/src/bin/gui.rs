@@ -6,13 +6,14 @@ extern crate serde_json;
 extern crate web_view;
 
 use base64::{encode_config, URL_SAFE};
-use exif::{Reader, Tag};
+use exif::{Reader, Tag, Exif, In};
 use rusqlite::types::{Null, ToSql};
 use rusqlite::{Connection, Error, NO_PARAMS};
 use serde::ser::Serialize;
 use std::env::current_dir;
 use std::fs::{read_dir, File};
 use std::io::BufReader;
+use std::path::PathBuf;
 use web_view::Content;
 
 fn main() {
@@ -37,7 +38,7 @@ fn main() {
                 Cmd::GetSQLiteVersion => {
                     let mut query = db.prepare("select sqlite_version() as version").unwrap();
                     let results: Result<Vec<String>, Error> = query
-                        .query_and_then(NO_PARAMS, |row| row.get_checked(0))
+                        .query_and_then(NO_PARAMS, |row| row.get(0))
                         .unwrap()
                         .collect();
                     to_json(&results.unwrap().concat())
@@ -64,7 +65,8 @@ fn main() {
 fn get_photos(db: &Connection) -> Vec<Photo> {
     let mut photos = Vec::new();
     if let Ok(mut path) = current_dir() {
-        path.push("photos");
+        // path.push("photos");
+        path = PathBuf::from("/home/luciano/VerCias/foto/2020-05");
 
         if let Ok(files) = read_dir(path) {
             let mut insert_photo = db
@@ -78,7 +80,7 @@ fn get_photos(db: &Connection) -> Vec<Photo> {
                     if file_type.is_file() {
                         let file = File::open(entry.path()).unwrap();
 
-                        match Reader::new(&mut BufReader::new(&file)) {
+                        match Reader::new().read_from_container(&mut BufReader::new(&file)) {
                             Ok(reader) => {
                                 if let Some(lat) =
                                     read_gps_field(&reader, Tag::GPSLatitude, Tag::GPSLatitudeRef)
@@ -90,13 +92,13 @@ fn get_photos(db: &Connection) -> Vec<Photo> {
                                     ) {
                                         let name = &entry.file_name().into_string().unwrap();
 
-                                        if let Some(jpeg) = get_jpeg(&reader, true) {
+                                        if let Some(jpeg) = get_jpeg(&reader, In::THUMBNAIL) {
                                             insert_photo
-                                                .execute(&[&name as &ToSql, &lat, &lon, &jpeg])
+                                                .execute(&[&name as &dyn ToSql, &lat, &lon, &jpeg])
                                                 .unwrap();
                                         } else {
                                             insert_photo
-                                                .execute(&[&name as &ToSql, &lat, &lon, &Null])
+                                                .execute(&[&name as &dyn ToSql, &lat, &lon, &Null])
                                                 .unwrap();
                                         }
                                     }
@@ -110,11 +112,11 @@ fn get_photos(db: &Connection) -> Vec<Photo> {
 
             let mut stmt = db.prepare("select name, lat, lon from photos").unwrap();
             let rows = stmt
-                .query_map(NO_PARAMS, |row| Photo {
-                    name: row.get::<_, String>(0),
-                    lat: row.get::<_, f64>(1),
-                    lon: row.get::<_, f64>(2),
-                })
+                .query_map(NO_PARAMS, |row| Ok(Photo {
+                    name: row.get::<_, String>(0)?,
+                    lat: row.get::<_, f64>(1)?,
+                    lon: row.get::<_, f64>(2)?,
+                }))
                 .unwrap();
 
             for photo in rows {
@@ -130,18 +132,18 @@ fn get_thumbnail(db: &Connection, name: String) -> Option<Vec<u8>> {
     let mut stmt = db
         .prepare("select thumbnail from photos where name = ?")
         .unwrap();
-    match stmt.query_row(&[&name as &ToSql], |r| r.get(0)) {
+    match stmt.query_row(&[&name as &dyn ToSql], |r| r.get(0)) {
         Ok(jpeg) => Some(jpeg),
         Err(_) => None,
     }
 }
 
-fn read_gps_field(reader: &Reader, gps_tag: Tag, gps_sign_tag: Tag) -> Option<f64> {
+fn read_gps_field(reader: &Exif, gps_tag: Tag, gps_sign_tag: Tag) -> Option<f64> {
     let mut result: Option<f64> = None;
 
-    if let Some(field) = reader.get_field(gps_tag, false) {
+    if let Some(field) = reader.get_field(gps_tag, In::PRIMARY) {
         if let exif::Value::Rational(ref value) = field.value {
-            if let Some(sign_field) = reader.get_field(gps_sign_tag, false) {
+            if let Some(sign_field) = reader.get_field(gps_sign_tag, In::PRIMARY) {
                 let sign_str = format!("{}", sign_field.value.display_as(sign_field.tag));
                 let sign = if sign_str == "S" || sign_str == "W" {
                     -1.0
@@ -156,7 +158,7 @@ fn read_gps_field(reader: &Reader, gps_tag: Tag, gps_sign_tag: Tag) -> Option<f6
     result
 }
 
-fn get_jpeg(reader: &Reader, thumbnail: bool) -> Option<&[u8]> {
+fn get_jpeg(reader: &Exif, thumbnail: In) -> Option<&[u8]> {
     let offset = reader
         .get_field(Tag::JPEGInterchangeFormat, thumbnail)
         .and_then(|f| f.value.get_uint(0));

@@ -5,15 +5,15 @@ authors = ["Luciano Vernaschi <luciano@cromoteca.com>"]
 edition = "2018"
 
 [dependencies]
-web-view = "0.4.0"
+web-view = { version = "0.6.3", features = ["edge"] }
 serde = "1.0"
 serde_derive = "1.0"
 serde_json = "1.0"
-kamadak-exif = "0.3.1"
-base64 = "0.10.1"
+kamadak-exif = "0.5.2"
+base64 = "0.12.3"
 
 [dependencies.rusqlite]
-version = "0.16.0"
+version = "0.24.0"
 features = ["bundled"]
 
 [[bin]]
