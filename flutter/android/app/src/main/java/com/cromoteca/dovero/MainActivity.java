@@ -1,4 +1,4 @@
-package com.example.dovero;
+package com.cromoteca.dovero;
 
 import io.flutter.embedding.android.FlutterActivity;
 
