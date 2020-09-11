@@ -4,10 +4,16 @@
 			"path": "angular-ui"
 		},
 		{
-			"path": "rust-app"
+			"path": "flutter"
+		},
+		{
+			"path": "quasar-ui"
 		},
 		{
 			"path": "react-ui"
-		}
+		},
+		{
+			"path": "rust-app"
+		},
 	]
 }
