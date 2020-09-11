@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong/latlong.dart';
@@ -44,34 +46,48 @@ class MyHomePage extends StatefulWidget {
 
 class Photo {
   LatLng position;
-  String name;
-  Photo({this.position, this.name});
+  String name = "unnamed";
+  Uint8List thumbnail;
+  Photo({this.position, this.name, this.thumbnail});
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  var photos = <Photo>[
-    Photo(
-      position: LatLng(51.5, -0.09),
-      name: "London",
-    ),
-    Photo(
-      position: LatLng(48.8566, 2.3522),
-      name: "Paris",
-    ),
-  ];
+  var photos = <Photo>[];
 
   @override
-  Future<void> initState() async {
+  void initState() {
     super.initState();
+    loadPhotos();
+  }
+
+  @override
+  void didUpdateWidget(MyHomePage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    loadPhotos();
+  }
+
+  Future<void> loadPhotos() async {
     var result = await pm.PhotoManager.requestPermission();
     if (result) {
-      // List<pm.AssetPathEntity> list = await pm.PhotoManager.getAssetPathList();
-      // photos = list.map((ape) {
-      //   List<pm.AssetEntity> imageList = ape.assetList;
-      //   return Photo (
-      //     position: pm.LatLng(ape.),
-      //   );
-      // });
+      var list = await pm.PhotoManager.getAssetPathList();
+      var allPhotos = await Future.wait(list
+          .map((ape) async {
+            try {
+              var imageList = await ape.assetList;
+              var ll = await imageList[0].latlngAsync();
+              var thumb = await imageList[0].thumbData;
+              return Photo(
+                  position: LatLng(ll.latitude, ll.longitude),
+                  name: ll.toString(), thumbnail: thumb);
+            } catch (err) {
+              return null;
+            }
+          })
+          .where((el) => el != null)
+          .toList());
+      setState(() {
+        photos = allPhotos;
+      });
     }
   }
 
@@ -99,12 +115,11 @@ class _MyHomePageState extends State<MyHomePage> {
             MarkerLayerOptions(
               markers: photos.map((photo) {
                 return Marker(
-                  width: 60.0,
-                  height: 30.0,
+                  width: 120.0,
+                  height: 120.0,
                   point: photo.position,
                   builder: (ctx) => Container(
-                    child: Text(photo.name,
-                        style: Theme.of(context).textTheme.bodyText1),
+                    child: Image(image: MemoryImage(photo.thumbnail)),
                   ),
                 );
               }).toList(),
