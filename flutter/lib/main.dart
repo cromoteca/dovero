@@ -71,16 +71,20 @@ class _MyHomePageState extends State<MyHomePage> {
     var result = await pm.PhotoManager.requestPermission();
     if (result) {
       var list = await pm.PhotoManager.getAssetPathList();
-      var photos = await Future.wait(list.map((ape) async {
+      var galleries = await Future.wait(list.map((ape) async {
         var imageList = await ape.assetList;
-        var image = imageList[0];
-        var ll = await image.latlngAsync();
-        var thumb = await image.thumbData;
-        return Photo(
-            position: LatLng(ll.latitude, ll.longitude),
-            info: image.createDateTime.toString(),
-            thumbnail: thumb);
-      }).toList());
+
+        Future<List<Photo>> lfp = Future.wait(imageList.map((image) async {
+          var ll = await image.latlngAsync();
+          var thumb = await image.thumbData;
+          return Photo(
+              position: LatLng(ll.latitude, ll.longitude),
+              info: image.createDateTime.toString(),
+              thumbnail: thumb);
+        }));
+        return lfp;
+      }));
+      var photos = galleries.expand((element) => element).toList();
 
       photos.removeWhere((el) => el.position.longitude == 0);
       setState(() {
