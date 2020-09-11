@@ -32,6 +32,9 @@ dependencies:
   # leaflet plugin
   flutter_map: any
 
+  # photo manager plugin
+  photo_manager: any
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

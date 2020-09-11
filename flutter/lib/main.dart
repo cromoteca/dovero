@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong/latlong.dart';
+import 'package:photo_manager/photo_manager.dart' as pm;
 
 void main() {
   runApp(MyApp());
@@ -11,24 +12,14 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Dovero',
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // Try running your application with "flutter run". You'll see the
-        // application has a blue toolbar. Then, without quitting the app, try
-        // changing the primarySwatch below to Colors.green and then invoke
-        // "hot reload" (press "r" in the console where you ran "flutter run",
-        // or simply save your changes to "hot reload" in a Flutter IDE).
-        // Notice that the counter didn't reset back to zero; the application
-        // is not restarted.
-        primarySwatch: Colors.red,
         // This makes the visual density adapt to the platform that you run
         // the app on. For desktop platforms, the controls will be smaller and
         // closer together (more dense) than on mobile platforms.
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: MyHomePage(title: 'Flutter Demo'),
+      home: MyHomePage(title: 'Dovero'),
     );
   }
 }
@@ -51,45 +42,76 @@ class MyHomePage extends StatefulWidget {
   _MyHomePageState createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+class Photo {
+  LatLng position;
+  String name;
+  Photo({this.position, this.name});
+}
 
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
+class _MyHomePageState extends State<MyHomePage> {
+  var photos = <Photo>[
+    Photo(
+      position: LatLng(51.5, -0.09),
+      name: "London",
+    ),
+    Photo(
+      position: LatLng(48.8566, 2.3522),
+      name: "Paris",
+    ),
+  ];
+
+  @override
+  Future<void> initState() async {
+    super.initState();
+    var result = await pm.PhotoManager.requestPermission();
+    if (result) {
+      // List<pm.AssetPathEntity> list = await pm.PhotoManager.getAssetPathList();
+      // photos = list.map((ape) {
+      //   List<pm.AssetEntity> imageList = ape.assetList;
+      //   return Photo (
+      //     position: pm.LatLng(ape.),
+      //   );
+      // });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return new FlutterMap(
-      options: new MapOptions(
-        center: new LatLng(51.5, -0.09),
-        zoom: 13.0,
+    return Scaffold(
+      appBar: AppBar(
+        // Here we take the value from the MyHomePage object that was created by
+        // the App.build method, and use it to set our appbar title.
+        title: Text(widget.title),
       ),
-      layers: [
-        new TileLayerOptions(
-            urlTemplate:
-                "https://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png",
-            subdomains: ['a', 'b', 'c']),
-        new MarkerLayerOptions(
-          markers: [
-            new Marker(
-              width: 80.0,
-              height: 80.0,
-              point: new LatLng(51.5, -0.09),
-              builder: (ctx) => new Container(
-                child: new FlutterLogo(),
-              ),
+      body: Center(
+        // Center is a layout widget. It takes a single child and positions it
+        // in the middle of the parent.
+        child: FlutterMap(
+          options: MapOptions(
+            center: LatLng(51.5, -0.09),
+            zoom: 13.0,
+          ),
+          layers: [
+            TileLayerOptions(
+                urlTemplate:
+                    "https://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png",
+                subdomains: ['a', 'b', 'c']),
+            MarkerLayerOptions(
+              markers: photos.map((photo) {
+                return Marker(
+                  width: 60.0,
+                  height: 30.0,
+                  point: photo.position,
+                  builder: (ctx) => Container(
+                    child: Text(photo.name,
+                        style: Theme.of(context).textTheme.bodyText1),
+                  ),
+                );
+              }).toList(),
             ),
           ],
         ),
-      ],
+      ),
     );
   }
 }
