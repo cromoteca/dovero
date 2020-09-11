@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_map_marker_cluster/flutter_map_marker_cluster.dart';
 import 'package:latlong/latlong.dart';
 import 'package:photo_manager/photo_manager.dart' as pm;
 
@@ -46,9 +47,9 @@ class MyHomePage extends StatefulWidget {
 
 class Photo {
   LatLng position;
-  String name = "unnamed";
+  String info = "";
   Uint8List thumbnail;
-  Photo({this.position, this.name, this.thumbnail});
+  Photo({this.position, this.info, this.thumbnail});
 }
 
 class _MyHomePageState extends State<MyHomePage> {
@@ -70,23 +71,20 @@ class _MyHomePageState extends State<MyHomePage> {
     var result = await pm.PhotoManager.requestPermission();
     if (result) {
       var list = await pm.PhotoManager.getAssetPathList();
-      var allPhotos = await Future.wait(list
-          .map((ape) async {
-            try {
-              var imageList = await ape.assetList;
-              var ll = await imageList[0].latlngAsync();
-              var thumb = await imageList[0].thumbData;
-              return Photo(
-                  position: LatLng(ll.latitude, ll.longitude),
-                  name: ll.toString(), thumbnail: thumb);
-            } catch (err) {
-              return null;
-            }
-          })
-          .where((el) => el != null)
-          .toList());
+      var photos = await Future.wait(list.map((ape) async {
+        var imageList = await ape.assetList;
+        var image = imageList[0];
+        var ll = await image.latlngAsync();
+        var thumb = await image.thumbData;
+        return Photo(
+            position: LatLng(ll.latitude, ll.longitude),
+            info: image.createDateTime.toString(),
+            thumbnail: thumb);
+      }).toList());
+
+      photos.removeWhere((el) => el.position.longitude == 0);
       setState(() {
-        photos = allPhotos;
+        this.photos = photos;
       });
     }
   }
@@ -104,25 +102,46 @@ class _MyHomePageState extends State<MyHomePage> {
         // in the middle of the parent.
         child: FlutterMap(
           options: MapOptions(
-            center: LatLng(51.5, -0.09),
-            zoom: 13.0,
+            bounds: photos.isEmpty
+                ? LatLngBounds(LatLng(50.5, -4.5), LatLng(37.5, 19))
+                : LatLngBounds.fromPoints(
+                    photos.map((e) => e.position).toList()),
+            boundsOptions: FitBoundsOptions(padding: EdgeInsets.all(50)),
+            plugins: [
+              MarkerClusterPlugin(),
+            ],
           ),
           layers: [
             TileLayerOptions(
                 urlTemplate:
                     "https://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png",
                 subdomains: ['a', 'b', 'c']),
-            MarkerLayerOptions(
+            MarkerClusterLayerOptions(
+              maxClusterRadius: 120,
+              size: Size(40, 40),
+              fitBoundsOptions: FitBoundsOptions(
+                padding: EdgeInsets.all(50),
+              ),
               markers: photos.map((photo) {
                 return Marker(
-                  width: 120.0,
-                  height: 120.0,
+                  width: 80.0,
+                  height: 80.0,
                   point: photo.position,
                   builder: (ctx) => Container(
                     child: Image(image: MemoryImage(photo.thumbnail)),
                   ),
                 );
               }).toList(),
+              polygonOptions: PolygonOptions(
+                  borderColor: Colors.blueAccent,
+                  color: Colors.black12,
+                  borderStrokeWidth: 3),
+              builder: (context, markers) {
+                return FloatingActionButton(
+                  child: Text(markers.length.toString()),
+                  onPressed: null,
+                );
+              },
             ),
           ],
         ),
