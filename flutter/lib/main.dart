@@ -82,7 +82,9 @@ class _MyHomePageState extends State<MyHomePage> {
               info: image.createDateTime.toString(),
               thumbnail: thumb);
         }));
-      }))).expand((e) => e).toList();
+      })))
+          .expand((e) => e)
+          .toList();
 
       photos.removeWhere((el) => el.position.longitude == 0);
       setState(() {
