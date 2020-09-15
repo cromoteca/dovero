@@ -54,43 +54,50 @@ class Photo {
 
 class _MyHomePageState extends State<MyHomePage> {
   var photos = <Photo>[];
+  var paths = <pm.AssetPathEntity>[];
 
   @override
   void initState() {
     super.initState();
-    loadPhotos();
+    loadAlbums();
   }
 
   @override
   void didUpdateWidget(MyHomePage oldWidget) {
     super.didUpdateWidget(oldWidget);
-    loadPhotos();
+    loadAlbums();
   }
 
-  Future<void> loadPhotos() async {
+  Future<void> loadAlbums() async {
     var result = await pm.PhotoManager.requestPermission();
     if (result) {
-      var list = await pm.PhotoManager.getAssetPathList();
-      var photos = (await Future.wait(list.map((ape) async {
-        var imageList = await ape.assetList;
-
-        return Future.wait(imageList.map((image) async {
-          var ll = await image.latlngAsync();
-          var thumb = await image.thumbData;
-          return Photo(
-              position: LatLng(ll.latitude, ll.longitude),
-              info: image.createDateTime.toString(),
-              thumbnail: thumb);
-        }));
-      })))
-          .expand((e) => e)
-          .toList();
-
-      photos.removeWhere((el) => el.position.longitude == 0);
+      var paths = await pm.PhotoManager.getAssetPathList();
       setState(() {
-        this.photos = photos;
+        this.paths = paths;
       });
     }
+  }
+
+  Future<void> loadPhotos(pm.AssetPathEntity ape) async {
+    var imageList = await ape.assetList;
+
+    var photos = await Future.wait(imageList.map((image) async {
+      var ll = await image.latlngAsync();
+      var thumb = await image.thumbData;
+      return Photo(
+          position: LatLng(ll.latitude, ll.longitude),
+          info: image.createDateTime.toString(),
+          thumbnail: thumb);
+    }));
+
+    photos.removeWhere((el) => el.position.longitude == 0);
+    setState(() {
+      this.photos = photos;
+    });
+  }
+
+  void setAlbum(pm.AssetPathEntity ape) {
+    loadPhotos(ape);
   }
 
   @override
@@ -100,6 +107,29 @@ class _MyHomePageState extends State<MyHomePage> {
         // Here we take the value from the MyHomePage object that was created by
         // the App.build method, and use it to set our appbar title.
         title: Text(widget.title),
+      ),
+      drawer: Drawer(
+        child: ListView(
+          // Important: Remove any padding from the ListView.
+          padding: EdgeInsets.zero,
+          children: <Widget>[
+            DrawerHeader(
+              child: Text('Albums: ${paths.length}'),
+              decoration: BoxDecoration(
+                color: Colors.blue,
+              ),
+            ),
+            ...paths
+                .map((ape) => ListTile(
+                      title: Text(ape.name),
+                      onTap: () {
+                        setAlbum(ape);
+                        Navigator.pop(context);
+                      },
+                    ))
+                .toList(),
+          ],
+        ),
       ),
       body: Center(
         // Center is a layout widget. It takes a single child and positions it
