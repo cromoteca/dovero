@@ -10,10 +10,7 @@
 			"path": "quasar-ui"
 		},
 		{
-			"path": "react-ui"
-		},
-		{
 			"path": "rust-app"
-		},
+		}
 	]
 }
