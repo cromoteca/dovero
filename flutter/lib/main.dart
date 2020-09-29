@@ -53,12 +53,15 @@ class Photo {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  final markerSize = 40.0;
   var photos = <Photo>[];
   var paths = <pm.AssetPathEntity>[];
+  MapController mapController;
 
   @override
   void initState() {
     super.initState();
+    mapController = MapController();
     loadAlbums();
   }
 
@@ -135,7 +138,10 @@ class _MyHomePageState extends State<MyHomePage> {
         // Center is a layout widget. It takes a single child and positions it
         // in the middle of the parent.
         child: FlutterMap(
+          mapController: mapController,
           options: MapOptions(
+            minZoom: 1,
+            maxZoom: 18,
             bounds: photos.isEmpty
                 ? LatLngBounds(LatLng(50.5, -4.5), LatLng(37.5, 19))
                 : LatLngBounds.fromPoints(
@@ -151,25 +157,22 @@ class _MyHomePageState extends State<MyHomePage> {
                     "https://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png",
                 subdomains: ['a', 'b', 'c']),
             MarkerClusterLayerOptions(
-              maxClusterRadius: 120,
-              size: Size(40, 40),
-              fitBoundsOptions: FitBoundsOptions(
-                padding: EdgeInsets.all(50),
-              ),
+              centerMarkerOnClick: false,
+              size: Size(markerSize, markerSize),
+              onClusterTap: (m) {
+                return false;
+              },
               markers: photos.map((photo) {
                 return Marker(
-                  width: 80.0,
-                  height: 80.0,
+                  width: markerSize,
+                  height: markerSize,
                   point: photo.position,
-                  builder: (ctx) => Container(
-                    child: Image(image: MemoryImage(photo.thumbnail)),
+                  builder: (ctx) => FloatingActionButton(
+                    child: Text("1"),
+                    onPressed: null,
                   ),
                 );
               }).toList(),
-              polygonOptions: PolygonOptions(
-                  borderColor: Colors.blueAccent,
-                  color: Colors.black12,
-                  borderStrokeWidth: 3),
               builder: (context, markers) {
                 return FloatingActionButton(
                   child: Text(markers.length.toString()),

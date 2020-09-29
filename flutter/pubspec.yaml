@@ -31,7 +31,10 @@ dependencies:
 
   # leaflet plugin
   flutter_map: any
-  flutter_map_marker_cluster: any
+
+  flutter_map_marker_cluster:
+    git:
+      url: https://github.com/cromoteca/flutter_map_marker_cluster.git
 
   # photo manager plugin
   photo_manager: any

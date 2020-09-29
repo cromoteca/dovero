@@ -135,9 +135,11 @@ packages:
   flutter_map_marker_cluster:
     dependency: "direct main"
     description:
-      name: flutter_map_marker_cluster
-      url: "https://pub.dartlang.org"
-    source: hosted
+      path: "."
+      ref: HEAD
+      resolved-ref: "7aaa9314085ec366b4f125153a8f0960154055dc"
+      url: "https://github.com/cromoteca/flutter_map_marker_cluster.git"
+    source: git
     version: "0.3.1"
   flutter_map_marker_popup:
     dependency: transitive
