@@ -97,6 +97,10 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {
       this.photos = photos;
     });
+
+    mapController.fitBounds(
+        LatLngBounds.fromPoints(photos.map((e) => e.position).toList()));
+    mapController.move(mapController.center, mapController.zoom / 1.1);
   }
 
   void setAlbum(pm.AssetPathEntity ape) {
