@@ -11,6 +11,9 @@
 		},
 		{
 			"path": "rust-app"
+		},
+		{
+			"path": "../forks/flutter_map_marker_cluster"
 		}
 	]
 }
