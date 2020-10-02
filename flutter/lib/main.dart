@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -5,6 +6,9 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_marker_cluster/flutter_map_marker_cluster.dart';
 import 'package:latlong/latlong.dart';
 import 'package:photo_manager/photo_manager.dart' as pm;
+import 'package:photo_view/photo_view_gallery.dart';
+
+const MARKER_SIZE = 40.0;
 
 void main() {
   runApp(MyApp());
@@ -49,13 +53,31 @@ class Photo {
   LatLng position;
   String info = "";
   Uint8List thumbnail;
-  Photo({this.position, this.info, this.thumbnail});
+  File file;
+  Photo({this.position, this.info, this.thumbnail, this.file});
+}
+
+class PhotoMarker extends Marker {
+  final File file;
+
+  PhotoMarker({
+    point,
+    builder,
+    this.file,
+  }) : super(
+          point: point,
+          builder: builder,
+          width: MARKER_SIZE,
+          height: MARKER_SIZE,
+        );
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final markerSize = 40.0;
-  var photos = <Photo>[];
-  var paths = <pm.AssetPathEntity>[];
+  var _photos = <Photo>[];
+  var _pageOptions = <PhotoViewGalleryPageOptions>[];
+  var _paths = <pm.AssetPathEntity>[];
+  var _displayIndex = 0;
+
   MapController mapController;
 
   @override
@@ -76,7 +98,7 @@ class _MyHomePageState extends State<MyHomePage> {
     if (result) {
       var paths = await pm.PhotoManager.getAssetPathList();
       setState(() {
-        this.paths = paths;
+        this._paths = paths;
       });
     }
   }
@@ -87,15 +109,18 @@ class _MyHomePageState extends State<MyHomePage> {
     var photos = await Future.wait(imageList.map((image) async {
       var ll = await image.latlngAsync();
       var thumb = await image.thumbData;
+      var file = await image.file;
       return Photo(
-          position: LatLng(ll.latitude, ll.longitude),
-          info: image.createDateTime.toString(),
-          thumbnail: thumb);
+        position: LatLng(ll.latitude, ll.longitude),
+        info: image.createDateTime.toString(),
+        thumbnail: thumb,
+        file: file,
+      );
     }));
 
     photos.removeWhere((el) => el.position.longitude == 0);
     setState(() {
-      this.photos = photos;
+      this._photos = photos;
     });
 
     mapController.fitBounds(
@@ -121,12 +146,12 @@ class _MyHomePageState extends State<MyHomePage> {
           padding: EdgeInsets.zero,
           children: <Widget>[
             DrawerHeader(
-              child: Text('Albums: ${paths.length}'),
+              child: Text('Albums: ${_paths.length}'),
               decoration: BoxDecoration(
                 color: Colors.blue,
               ),
             ),
-            ...paths
+            ..._paths
                 .map((ape) => ListTile(
                       title: Text(ape.name),
                       onTap: () {
@@ -138,54 +163,69 @@ class _MyHomePageState extends State<MyHomePage> {
           ],
         ),
       ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: FlutterMap(
-          mapController: mapController,
-          options: MapOptions(
-            minZoom: 1,
-            maxZoom: 18,
-            bounds: photos.isEmpty
-                ? LatLngBounds(LatLng(50.5, -4.5), LatLng(37.5, 19))
-                : LatLngBounds.fromPoints(
-                    photos.map((e) => e.position).toList()),
-            boundsOptions: FitBoundsOptions(padding: EdgeInsets.all(50)),
-            plugins: [
-              MarkerClusterPlugin(),
-            ],
-          ),
-          layers: [
-            TileLayerOptions(
+      body: IndexedStack(
+        index: _displayIndex,
+        children: [
+          FlutterMap(
+            mapController: mapController,
+            options: MapOptions(
+              minZoom: 1,
+              maxZoom: 18,
+              bounds: _photos.isEmpty
+                  ? LatLngBounds(LatLng(50.5, -4.5), LatLng(37.5, 19))
+                  : LatLngBounds.fromPoints(
+                      _photos.map((e) => e.position).toList()),
+              boundsOptions: FitBoundsOptions(padding: EdgeInsets.all(50)),
+              plugins: [
+                MarkerClusterPlugin(),
+              ],
+            ),
+            layers: [
+              TileLayerOptions(
                 urlTemplate:
                     "https://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png",
-                subdomains: ['a', 'b', 'c']),
-            MarkerClusterLayerOptions(
-              centerMarkerOnClick: false,
-              size: Size(markerSize, markerSize),
-              onClusterTap: (m) {
-                return false;
-              },
-              markers: photos.map((photo) {
-                return Marker(
-                  width: markerSize,
-                  height: markerSize,
-                  point: photo.position,
-                  builder: (ctx) => FloatingActionButton(
-                    child: Text("1"),
-                    onPressed: null,
-                  ),
-                );
-              }).toList(),
-              builder: (context, markers) {
-                return FloatingActionButton(
-                  child: Text(markers.length.toString()),
-                  onPressed: null,
-                );
-              },
-            ),
-          ],
-        ),
+                subdomains: ['a', 'b', 'c'],
+              ),
+              MarkerClusterLayerOptions(
+                centerMarkerOnClick: false,
+                size: Size(MARKER_SIZE, MARKER_SIZE),
+                onClusterTap: (m) {
+                  return false;
+                },
+                markers: _photos.map((photo) {
+                  return PhotoMarker(
+                    point: photo.position,
+                    builder: (ctx) => FloatingActionButton(
+                      child: Text("1"),
+                      onPressed: null,
+                    ),
+                    file: photo.file,
+                  );
+                }).toList(),
+                builder: (context, markers) {
+                  return FloatingActionButton(
+                    child: Text(markers.length.toString()),
+                    onPressed: () {
+                      setState(() {
+                        this._pageOptions = markers
+                            // .map((m) => FileImage((m as PhotoMarker).file))
+                            .map((m) => PhotoViewGalleryPageOptions(
+                                  imageProvider:
+                                      FileImage((m as PhotoMarker).file),
+                                ))
+                            .toList();
+                        this._displayIndex = 1;
+                      });
+                    },
+                  );
+                },
+              ),
+            ],
+          ),
+          PhotoViewGallery(
+            pageOptions: _pageOptions,
+          ),
+        ],
       ),
     );
   }
