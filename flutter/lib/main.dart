@@ -134,98 +134,121 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-      ),
-      drawer: Drawer(
-        child: ListView(
-          // Important: Remove any padding from the ListView.
-          padding: EdgeInsets.zero,
-          children: <Widget>[
-            DrawerHeader(
-              child: Text('Albums: ${_paths.length}'),
-              decoration: BoxDecoration(
-                color: Colors.blue,
-              ),
-            ),
-            ..._paths
-                .map((ape) => ListTile(
-                      title: Text(ape.name),
-                      onTap: () {
-                        setAlbum(ape);
-                        Navigator.pop(context);
-                      },
-                    ))
-                .toList(),
-          ],
+    return new WillPopScope(
+      onWillPop: () async {
+        if (this._displayIndex == 1) {
+          setState(() {
+            this._displayIndex = 0;
+          });
+
+          return false;
+        } else {
+          return true;
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          // Here we take the value from the MyHomePage object that was created by
+          // the App.build method, and use it to set our appbar title.
+          title: Text(widget.title),
+          leading: this._displayIndex > 0 ? BackButton() : null,
         ),
-      ),
-      body: IndexedStack(
-        index: _displayIndex,
-        children: [
-          FlutterMap(
-            mapController: mapController,
-            options: MapOptions(
-              minZoom: 1,
-              maxZoom: 18,
-              bounds: _photos.isEmpty
-                  ? LatLngBounds(LatLng(50.5, -4.5), LatLng(37.5, 19))
-                  : LatLngBounds.fromPoints(
-                      _photos.map((e) => e.position).toList()),
-              boundsOptions: FitBoundsOptions(padding: EdgeInsets.all(50)),
-              plugins: [
-                MarkerClusterPlugin(),
-              ],
-            ),
-            layers: [
-              TileLayerOptions(
-                urlTemplate:
-                    "https://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png",
-                subdomains: ['a', 'b', 'c'],
+        drawer: Drawer(
+          child: ListView(
+            // Important: Remove any padding from the ListView.
+            padding: EdgeInsets.zero,
+            children: <Widget>[
+              DrawerHeader(
+                child: Text('Albums: ${_paths.length}'),
+                decoration: BoxDecoration(
+                  color: Colors.blue,
+                ),
               ),
-              MarkerClusterLayerOptions(
-                centerMarkerOnClick: false,
-                size: Size(MARKER_SIZE, MARKER_SIZE),
-                onClusterTap: (m) {
-                  return false;
-                },
-                markers: _photos.map((photo) {
-                  return PhotoMarker(
-                    point: photo.position,
-                    builder: (ctx) => FloatingActionButton(
-                      child: Text("1"),
-                      onPressed: null,
-                    ),
-                    file: photo.file,
-                  );
-                }).toList(),
-                builder: (context, markers) {
-                  return FloatingActionButton(
-                    child: Text(markers.length.toString()),
-                    onPressed: () {
-                      setState(() {
-                        this._pageOptions = markers
-                            // .map((m) => FileImage((m as PhotoMarker).file))
-                            .map((m) => PhotoViewGalleryPageOptions(
-                                  imageProvider:
-                                      FileImage((m as PhotoMarker).file),
-                                ))
-                            .toList();
-                        this._displayIndex = 1;
-                      });
-                    },
-                  );
-                },
-              ),
+              ..._paths
+                  .map((ape) => ListTile(
+                        title: Text(ape.name),
+                        onTap: () {
+                          setAlbum(ape);
+                          Navigator.pop(context);
+                        },
+                      ))
+                  .toList(),
             ],
           ),
-          PhotoViewGallery(
-            pageOptions: _pageOptions,
-          ),
-        ],
+        ),
+        body: IndexedStack(
+          index: _displayIndex,
+          children: [
+            FlutterMap(
+              mapController: mapController,
+              options: MapOptions(
+                minZoom: 1,
+                maxZoom: 18,
+                bounds: _photos.isEmpty
+                    ? LatLngBounds(LatLng(50.5, -4.5), LatLng(37.5, 19))
+                    : LatLngBounds.fromPoints(
+                        _photos.map((e) => e.position).toList()),
+                boundsOptions: FitBoundsOptions(padding: EdgeInsets.all(50)),
+                plugins: [
+                  MarkerClusterPlugin(),
+                ],
+              ),
+              layers: [
+                TileLayerOptions(
+                  urlTemplate:
+                      "https://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png",
+                  subdomains: ['a', 'b', 'c'],
+                ),
+                MarkerClusterLayerOptions(
+                  centerMarkerOnClick: false,
+                  size: Size(MARKER_SIZE, MARKER_SIZE),
+                  onClusterTap: (m) {
+                    return false;
+                  },
+                  markers: _photos.map((photo) {
+                    return PhotoMarker(
+                      point: photo.position,
+                      builder: (ctx) => FloatingActionButton(
+                        child: Text("1"),
+                        onPressed: () {
+                          setState(() {
+                            this._pageOptions = [
+                              PhotoViewGalleryPageOptions(
+                                imageProvider: FileImage(photo.file),
+                              ),
+                            ];
+                            this._displayIndex = 1;
+                          });
+                        },
+                      ),
+                      file: photo.file,
+                    );
+                  }).toList(),
+                  builder: (context, markers) {
+                    return FloatingActionButton(
+                      child: Text(markers.length.toString()),
+                      onPressed: () {
+                        setState(() {
+                          this._pageOptions = markers
+                              // .map((m) => FileImage((m as PhotoMarker).file))
+                              .map((m) => PhotoViewGalleryPageOptions(
+                                    imageProvider:
+                                        FileImage((m as PhotoMarker).file),
+                                  ))
+                              .toList();
+                          this._displayIndex = 1;
+                        });
+                      },
+                    );
+                  },
+                ),
+              ],
+            ),
+            PhotoViewGallery(
+              pageOptions: _pageOptions,
+            ),
+          ],
+        ),
       ),
     );
   }
