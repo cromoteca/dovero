@@ -4,8 +4,10 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_marker_cluster/flutter_map_marker_cluster.dart';
+import 'package:intl/intl.dart';
 import 'package:latlong/latlong.dart';
 import 'package:photo_manager/photo_manager.dart' as pm;
+import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 
 const MARKER_SIZE = 40.0;
@@ -51,19 +53,19 @@ class MyHomePage extends StatefulWidget {
 
 class Photo {
   LatLng position;
-  String info = "";
+  DateTime created;
   Uint8List thumbnail;
   File file;
-  Photo({this.position, this.info, this.thumbnail, this.file});
+  Photo({this.position, this.created, this.thumbnail, this.file});
 }
 
 class PhotoMarker extends Marker {
-  final File file;
+  final Photo photo;
 
   PhotoMarker({
     point,
     builder,
-    this.file,
+    this.photo,
   }) : super(
           point: point,
           builder: builder,
@@ -74,7 +76,7 @@ class PhotoMarker extends Marker {
 
 class _MyHomePageState extends State<MyHomePage> {
   var _photos = <Photo>[];
-  var _pageOptions = <PhotoViewGalleryPageOptions>[];
+  var _selectedPhotos = <Photo>[];
   var _paths = <pm.AssetPathEntity>[];
   var _displayIndex = 0;
 
@@ -112,7 +114,7 @@ class _MyHomePageState extends State<MyHomePage> {
       var file = await image.file;
       return Photo(
         position: LatLng(ll.latitude, ll.longitude),
-        info: image.createDateTime.toString(),
+        created: image.createDateTime ?? file.lastModifiedSync(),
         thumbnail: thumb,
         file: file,
       );
@@ -212,16 +214,12 @@ class _MyHomePageState extends State<MyHomePage> {
                         child: Text("1"),
                         onPressed: () {
                           setState(() {
-                            this._pageOptions = [
-                              PhotoViewGalleryPageOptions(
-                                imageProvider: FileImage(photo.file),
-                              ),
-                            ];
+                            this._selectedPhotos = [photo];
                             this._displayIndex = 1;
                           });
                         },
                       ),
-                      file: photo.file,
+                      photo: photo,
                     );
                   }).toList(),
                   builder: (context, markers) {
@@ -229,12 +227,8 @@ class _MyHomePageState extends State<MyHomePage> {
                       child: Text(markers.length.toString()),
                       onPressed: () {
                         setState(() {
-                          this._pageOptions = markers
-                              // .map((m) => FileImage((m as PhotoMarker).file))
-                              .map((m) => PhotoViewGalleryPageOptions(
-                                    imageProvider:
-                                        FileImage((m as PhotoMarker).file),
-                                  ))
+                          this._selectedPhotos = markers
+                              .map((m) => (m as PhotoMarker).photo)
                               .toList();
                           this._displayIndex = 1;
                         });
@@ -244,8 +238,37 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
               ],
             ),
-            PhotoViewGallery(
-              pageOptions: _pageOptions,
+            PhotoViewGallery.builder(
+              itemCount: _selectedPhotos.length,
+              builder: (context, index) {
+                return PhotoViewGalleryPageOptions.customChild(
+                  child: Stack(
+                    alignment: Alignment.bottomRight,
+                    children: <Widget>[
+                      PhotoView(
+                        imageProvider: FileImage(_selectedPhotos[index].file),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.all(10.0),
+                        child: Text(
+                          DateFormat.yMMMd()
+                              .format(_selectedPhotos[index].created),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 17.0,
+                            shadows: [
+                              Shadow(
+                                color: Colors.black,
+                                blurRadius: 5,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
             ),
           ],
         ),
