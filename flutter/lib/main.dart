@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_marker_cluster/flutter_map_marker_cluster.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
 import 'package:latlong/latlong.dart';
 import 'package:photo_manager/photo_manager.dart' as pm;
@@ -124,6 +125,9 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {
       this._photos = photos;
     });
+    Fluttertoast.showToast(
+      msg: "${photos.length} images loaded",
+    );
 
     mapController.fitBounds(
         LatLngBounds.fromPoints(photos.map((e) => e.position).toList()));

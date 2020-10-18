@@ -36,6 +36,8 @@ dependencies:
     git:
       url: https://github.com/cromoteca/flutter_map_marker_cluster.git
 
+  fluttertoast: any
+
   # photo manager plugin
   photo_manager: any
 
