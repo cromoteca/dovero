@@ -14,6 +14,10 @@ class Photo {
 }
 
 class MapModel extends ChangeNotifier {
+  MapModel({@required String initialTitle}) {
+    this._title = initialTitle;
+  }
+
   String _title;
   String get title => _title;
   set title(String newTitle) {

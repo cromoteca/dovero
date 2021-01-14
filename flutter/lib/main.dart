@@ -12,7 +12,9 @@ class MapApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (context) => MapModel(),
+      create: (context) => MapModel(
+        initialTitle: 'Dovero',
+      ),
       child: MaterialApp(
         title: 'Dovero',
         theme: ThemeData(
@@ -26,9 +28,7 @@ class MapApp extends StatelessWidget {
           ),
           drawer: Drawer(),
           body: IndexedStack(
-            children: [
-              
-            ],
+            children: [],
           ),
         ),
       ),
