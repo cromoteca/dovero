@@ -27,11 +27,20 @@ class MapModel extends ChangeNotifier {
     }
   }
 
-  List<Photo> _photos;
+  List<Photo> _photos = [];
   List<Photo> get photos => _photos;
   set photos(List<Photo> newPhotos) {
     if (newPhotos != _photos) {
       _photos = newPhotos;
+      notifyListeners();
+    }
+  }
+
+  List<Photo> _selectedPhotos = [];
+  List<Photo> get selectedPhotos => _selectedPhotos;
+  set selectedPhotos(List<Photo> newPhotos) {
+    if (newPhotos != _selectedPhotos) {
+      _selectedPhotos = newPhotos;
       notifyListeners();
     }
   }
