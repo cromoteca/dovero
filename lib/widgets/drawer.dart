@@ -1,16 +1,17 @@
-import 'package:dovero/models/map.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:latlong/latlong.dart' as ll;
 import 'package:photo_manager/photo_manager.dart';
 import 'package:provider/provider.dart';
 
-class GalleryDrawer extends StatefulWidget {
+import '../models/map.dart';
+
+class DrawerWidget extends StatefulWidget {
   @override
   State<StatefulWidget> createState() => _GalleryState();
 }
 
-class _GalleryState extends State<GalleryDrawer> {
+class _GalleryState extends State<DrawerWidget> {
   var _paths = <AssetPathEntity>[];
 
   @override

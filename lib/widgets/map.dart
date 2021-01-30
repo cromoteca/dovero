@@ -1,9 +1,11 @@
-import 'package:dovero/models/map.dart';
+import 'package:dovero/screens/gallery.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/plugin_api.dart';
 import 'package:flutter_map_marker_cluster/flutter_map_marker_cluster.dart';
 import 'package:latlong/latlong.dart';
 import 'package:provider/provider.dart';
+
+import '../models/map.dart';
 
 const MARKER_SIZE = 40.0;
 
@@ -22,8 +24,8 @@ class PhotoMarker extends Marker {
         );
 }
 
-class Map extends Consumer<MapModel> {
-  Map()
+class MapWidget extends Consumer<MapModel> {
+  MapWidget()
       : super(
           builder: (context, model, child) => FlutterMap(
             options: MapOptions(
@@ -57,6 +59,11 @@ class Map extends Consumer<MapModel> {
                       child: Text("1"),
                       onPressed: () {
                         model.selectedPhotos = [photo];
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => GalleryScreen()),
+                        );
                       },
                     ),
                     photo: photo,
@@ -67,6 +74,10 @@ class Map extends Consumer<MapModel> {
                   onPressed: () {
                     model.selectedPhotos =
                         markers.map((m) => (m as PhotoMarker).photo).toList();
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => GalleryScreen()),
+                    );
                   },
                 ),
               ),
