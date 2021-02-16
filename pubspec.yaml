@@ -37,6 +37,7 @@ dependencies:
   flutter_map_marker_cluster:
     git:
       url: https://github.com/cromoteca/flutter_map_marker_cluster.git
+    # path: ../forks/flutter_map_marker_cluster
 
   fluttertoast: any
 
@@ -44,6 +45,8 @@ dependencies:
   photo_manager: any
 
   photo_view: any
+
+  exifdart: any
 
 dev_dependencies:
   flutter_test:

@@ -1,4 +1,5 @@
 import 'package:dovero/screens/gallery.dart';
+import 'package:dovero/widgets/mapzoom.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/plugin_api.dart';
 import 'package:flutter_map_marker_cluster/flutter_map_marker_cluster.dart';
@@ -38,6 +39,7 @@ class MapWidget extends Consumer<MapModel> {
               boundsOptions: FitBoundsOptions(padding: EdgeInsets.all(50)),
               plugins: [
                 MarkerClusterPlugin(),
+                ZoomButtonsPlugin(),
               ],
             ),
             layers: [
@@ -81,6 +83,7 @@ class MapWidget extends Consumer<MapModel> {
                   },
                 ),
               ),
+              ZoomButtonsPluginOption(),
             ],
           ),
         );

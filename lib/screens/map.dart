@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:dovero/widgets/desktop.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -13,7 +16,7 @@ class MapScreen extends StatelessWidget {
             builder: (context, map, child) => Text(map.title),
           ),
         ),
-        drawer: DrawerWidget(),
+        drawer: Platform.isLinux ? DesktopWidget() : DrawerWidget(),
         body: MapWidget(),
       );
 }
