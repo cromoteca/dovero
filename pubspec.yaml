@@ -41,6 +41,8 @@ dependencies:
 
   fluttertoast: any
 
+  event_bus: any
+
   # photo manager plugin
   photo_manager: any
 

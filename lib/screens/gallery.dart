@@ -1,8 +1,8 @@
+import 'package:dovero/models/map.dart';
+import 'package:dovero/widgets/gallery.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../models/map.dart';
-import '../widgets/gallery.dart';
 
 class GalleryScreen extends StatelessWidget {
   @override

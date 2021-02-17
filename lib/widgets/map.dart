@@ -1,12 +1,13 @@
+import 'package:dovero/main.dart';
+import 'package:dovero/models/map.dart';
 import 'package:dovero/screens/gallery.dart';
 import 'package:dovero/widgets/mapzoom.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/plugin_api.dart';
 import 'package:flutter_map_marker_cluster/flutter_map_marker_cluster.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:latlong/latlong.dart';
 import 'package:provider/provider.dart';
-
-import '../models/map.dart';
 
 const MARKER_SIZE = 40.0;
 
@@ -25,10 +26,13 @@ class PhotoMarker extends Marker {
         );
 }
 
+MapController _controller = MapController();
+
 class MapWidget extends Consumer<MapModel> {
   MapWidget()
       : super(
           builder: (context, model, child) => FlutterMap(
+            mapController: _controller,
             options: MapOptions(
               minZoom: 1,
               maxZoom: 18,
@@ -83,8 +87,22 @@ class MapWidget extends Consumer<MapModel> {
                   },
                 ),
               ),
-              ZoomButtonsPluginOption(),
+              ZoomButtonsPluginOption(
+                alignment: Alignment.bottomRight,
+                zoomInColor: Theme.of(context).buttonColor,
+                zoomOutColor: Theme.of(context).buttonColor,
+              ),
             ],
           ),
-        );
+        ) {
+    eventBus.on<PhotosLoadedEvent>().listen((event) {
+      Fluttertoast.showToast(
+        msg: "${event.photos.length} images loaded",
+      );
+
+      _controller.fitBounds(LatLngBounds.fromPoints(
+          event.photos.map((e) => e.position).toList()));
+      _controller.move(_controller.center, _controller.zoom / 1.1);
+    });
+  }
 }

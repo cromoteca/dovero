@@ -1,12 +1,11 @@
 import 'dart:io';
 
+import 'package:dovero/models/map.dart';
 import 'package:dovero/widgets/desktop.dart';
+import 'package:dovero/widgets/drawer.dart';
+import 'package:dovero/widgets/map.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
-import '../models/map.dart';
-import '../widgets/drawer.dart';
-import '../widgets/map.dart';
 
 class MapScreen extends StatelessWidget {
   @override

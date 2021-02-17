@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:dovero/main.dart';
 import 'package:flutter/foundation.dart';
 import 'package:latlong/latlong.dart';
 
@@ -31,6 +32,7 @@ class MapModel extends ChangeNotifier {
     if (newPhotos != _photos) {
       _photos = newPhotos;
       notifyListeners();
+      eventBus.fire(PhotosLoadedEvent(photos));
     }
   }
 
@@ -42,4 +44,10 @@ class MapModel extends ChangeNotifier {
       notifyListeners();
     }
   }
+}
+
+class PhotosLoadedEvent {
+  final List<Photo> photos;
+
+  PhotosLoadedEvent(this.photos);
 }

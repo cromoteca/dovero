@@ -1,10 +1,9 @@
+import 'package:dovero/models/map.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:latlong/latlong.dart' as ll;
 import 'package:photo_manager/photo_manager.dart';
 import 'package:provider/provider.dart';
-
-import '../models/map.dart';
 
 class DrawerWidget extends StatefulWidget {
   @override
@@ -19,12 +18,6 @@ class _GalleryState extends State<DrawerWidget> {
     super.initState();
     loadAlbums();
   }
-
-  // @override
-  // void didUpdateWidget(GalleryDrawer oldWidget) {
-  //   super.didUpdateWidget(oldWidget);
-  //   loadAlbums();
-  // }
 
   @override
   Widget build(BuildContext context) => Drawer(

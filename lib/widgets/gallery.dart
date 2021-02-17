@@ -1,10 +1,9 @@
+import 'package:dovero/models/map.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 import 'package:provider/provider.dart';
-
-import '../models/map.dart';
 
 class GalleryWidget extends Consumer<MapModel> {
   GalleryWidget()

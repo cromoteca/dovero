@@ -1,14 +1,13 @@
 import 'dart:core';
 import 'dart:io';
 
+import 'package:dovero/models/map.dart';
 import 'package:exifdart/exifdart.dart';
 import 'package:exifdart/exifdart_io.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:latlong/latlong.dart';
 import 'package:provider/provider.dart';
-
-import '../models/map.dart';
 
 class DesktopWidget extends StatefulWidget {
   @override
