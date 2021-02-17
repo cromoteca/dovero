@@ -59,9 +59,11 @@ class _GalleryState extends State<DrawerWidget> {
     var photos = await Future.wait(imageList.map((image) async {
       var latlng = await image.latlngAsync();
       var file = await image.file;
+      var thumb = await image.thumbData;
       return Photo(
         position: ll.LatLng(latlng.latitude, latlng.longitude),
         created: image.createDateTime ?? file.lastModifiedSync(),
+        thumbnail: thumb,
         file: file,
       );
     }));

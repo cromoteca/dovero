@@ -16,6 +16,19 @@ class GalleryWidget extends Consumer<MapModel> {
                   alignment: Alignment.bottomRight,
                   children: <Widget>[
                     PhotoView(
+                      loadingBuilder: (context, event) =>
+                          model.selectedPhotos[index].thumbnail == null
+                              ? Container()
+                              : Center(
+                                  child: Image(
+                                    image: MemoryImage(
+                                        model.selectedPhotos[index].thumbnail),
+                                    fit: BoxFit.contain,
+                                    height: double.infinity,
+                                    width: double.infinity,
+                                    alignment: Alignment.center,
+                                  ),
+                                ),
                       imageProvider:
                           FileImage(model.selectedPhotos[index].file),
                     ),

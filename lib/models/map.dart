@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:dovero/main.dart';
 import 'package:flutter/foundation.dart';
@@ -7,9 +8,10 @@ import 'package:latlong/latlong.dart';
 class Photo {
   LatLng position;
   DateTime created;
+  Uint8List thumbnail;
   File file;
 
-  Photo({this.position, this.created, this.file});
+  Photo({this.position, this.created, this.thumbnail, this.file});
 }
 
 class MapModel extends ChangeNotifier {
