@@ -5,7 +5,6 @@ import 'package:dovero/widgets/mapzoom.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/plugin_api.dart';
 import 'package:flutter_map_marker_cluster/flutter_map_marker_cluster.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:latlong/latlong.dart';
 import 'package:provider/provider.dart';
 
@@ -29,7 +28,9 @@ class PhotoMarker extends Marker {
 MapController _controller = MapController();
 
 class MapWidget extends Consumer<MapModel> {
-  MapWidget()
+  final BuildContext context;
+
+  MapWidget(this.context)
       : super(
           builder: (context, model, child) => FlutterMap(
             mapController: _controller,
@@ -96,9 +97,9 @@ class MapWidget extends Consumer<MapModel> {
           ),
         ) {
     eventBus.on<PhotosLoadedEvent>().listen((event) {
-      Fluttertoast.showToast(
-        msg: "${event.photos.length} images loaded",
-      );
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text("${event.photos.length} images loaded"),
+      ));
 
       _controller.fitBounds(LatLngBounds.fromPoints(
           event.photos.map((e) => e.position).toList()));

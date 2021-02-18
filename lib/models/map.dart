@@ -51,5 +51,5 @@ class MapModel extends ChangeNotifier {
 class PhotosLoadedEvent {
   final List<Photo> photos;
 
-  PhotosLoadedEvent(this.photos);
+  const PhotosLoadedEvent(this.photos);
 }

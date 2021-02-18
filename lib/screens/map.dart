@@ -16,6 +16,6 @@ class MapScreen extends StatelessWidget {
           ),
         ),
         drawer: Platform.isLinux ? DesktopWidget() : DrawerWidget(),
-        body: MapWidget(),
+        body: MapWidget(context),
       );
 }
