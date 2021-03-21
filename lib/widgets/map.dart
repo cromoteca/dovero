@@ -79,8 +79,11 @@ class MapWidget extends Consumer<MapModel> {
                 builder: (context, markers) => FloatingActionButton(
                   child: Text(markers.length.toString()),
                   onPressed: () {
-                    model.selectedPhotos =
+                    var selectedPhotos =
                         markers.map((m) => (m as PhotoMarker).photo).toList();
+                    selectedPhotos
+                        .sort((a, b) => b.created.compareTo(a.created));
+                    model.selectedPhotos = selectedPhotos;
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) => GalleryScreen()),
