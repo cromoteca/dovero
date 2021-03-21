@@ -56,7 +56,9 @@ class _GalleryState extends State<DrawerWidget> {
   Future<void> loadPhotos(AssetPathEntity ape) async {
     var imageList = await ape.assetList;
 
-    var photos = await Future.wait(imageList.map((image) async {
+    var photos = await Future.wait(imageList
+        .where((image) => image.type == AssetType.image)
+        .map((image) async {
       var latlng = await image.latlngAsync();
       var file = await image.file;
       var thumb = await image.thumbData;
