@@ -1,0 +1,4 @@
+{
+    "albumCount": "{count, plural, zero{Nessun album di foto} one{1 album di foto} other{{count} album di foto}}",
+    "loadedImagesCount": "{count, plural, zero{Questo album non contiene foto con informazioni geografiche} one{Un'immagine è disponibile sulla mappa} other{{count} immagini sono disponibili sulla mappa}}"
+}

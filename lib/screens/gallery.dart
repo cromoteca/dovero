@@ -3,7 +3,6 @@ import 'package:dovero/widgets/gallery.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-
 class GalleryScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Scaffold(

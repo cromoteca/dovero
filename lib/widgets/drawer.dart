@@ -1,6 +1,7 @@
 import 'package:dovero/models/map.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:latlong/latlong.dart' as ll;
 import 'package:photo_manager/photo_manager.dart';
 import 'package:provider/provider.dart';
@@ -25,7 +26,7 @@ class _GalleryState extends State<DrawerWidget> {
           padding: EdgeInsets.zero,
           children: <Widget>[
             DrawerHeader(
-              child: Text('Albums: ${_paths.length}'),
+              child: Text(AppLocalizations.of(context).albumCount(_paths.length)),
               decoration: BoxDecoration(
                 color: Colors.blue,
               ),

@@ -1,0 +1,14 @@
+{
+  "albumCount": "{count, plural, zero{no photo albums} one{1 photo album} other{{count} photo albums}}",
+  "@albumCount": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "loadedImagesCount": "{count, plural, zero{This album doesn't contain geotagged images} one{One image has been placed on the map} other{{count} images have been placed on the map}}",
+  "@loadedImagesCount": {
+    "placeholders": {
+      "count": {}
+    }
+  }
+}
