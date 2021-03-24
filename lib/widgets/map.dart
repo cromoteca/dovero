@@ -50,8 +50,7 @@ class MapWidget extends Consumer<MapModel> {
             ),
             layers: [
               TileLayerOptions(
-                urlTemplate:
-                    "https://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png",
+                urlTemplate: _osmURL(AppLocalizations.of(context).localeName),
                 subdomains: ['a', 'b', 'c'],
               ),
               MarkerClusterLayerOptions(
@@ -102,7 +101,8 @@ class MapWidget extends Consumer<MapModel> {
         ) {
     eventBus.on<PhotosLoadedEvent>().listen((event) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(AppLocalizations.of(context).loadedImagesCount(event.photos.length)),
+        content: Text(AppLocalizations.of(context)
+            .loadedImagesCount(event.photos.length)),
       ));
 
       _controller.fitBounds(LatLngBounds.fromPoints(
@@ -110,4 +110,13 @@ class MapWidget extends Consumer<MapModel> {
       _controller.move(_controller.center, _controller.zoom / 1.1);
     });
   }
+}
+
+// would like to use i18n for this, but curly braces are a mess in ARB files
+String _osmURL(String locale) {
+  if (locale == 'fr') {
+    return 'https://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png';
+  }
+
+  return 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
 }
